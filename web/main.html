@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo Netflix</title> 
+    <style> 
+        th {
+            background-color: #e7f1f6;
+        }
+        td, th {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: center;
+        }
+        table {
+            border-collapse: collapse;
+            width: 96%;
+            margin: 50px 2% 0 2%;
+            font-size: 17px;
+        }
+        tr:nth-child(odd) {
+            background-color: #f0f7f9;
+        }
+        </style>
+</head>
+<body>
+    <div style="width: 100%">
+    
+        <div style="font-size: 30px; font-weight: bold; padding: 25px; text-align: center;">
+            CATÁLOGO NETFLIX
+        </div>
+
+        <div style="width: 80%; padding: 20px 10% 0 10%">
+            <form>
+                <div style="width: 100%; display: block; text-align: center; font-size: 21px; padding: 0px 0px 20px 0px; font-weight: bold;">Filtros de Pesquisa:<br></div>
+                <div style="width: 33%; display: inline-block; text-align: center; font-size: 18px;">
+                    Filme
+                    <br>
+                    <input type="radio" name="filtro" value="filme" checked="checked">
+                </div>
+                <div style="width: 33%; display: inline-block; text-align: center; font-size: 18px;">
+                    Ator
+                    <br>
+                    <input type="radio" name="filtro" value="ator">
+                </div>
+                <div style="width: 33%; display: inline-block; text-align: center; font-size: 18px;">
+                    Diretor
+                    <br>
+                    <input type="radio" name="filtro" value="diretor">
+                </div>
+
+                <input type="text" id="pesquisa" style="width: 50%; margin: 25px 2% 0 13%; font-size: 17px; padding: 7px 10px 7px 10px;" placeholder="Pesquisa..."/>
+                <input type="button" style="width: 20%; margin: 25px 0 0 2%; font-size: 17px; padding: 7px 10px 7px 10px;" value="Pesquisar!">
+
+            </form>
+
+
+        </div>
+        <div style="padding: 0 2%;">
+            <table id="tabelaDados">
+                <tr>
+                    <th>Nome</th>
+                    <th>Duração e<br>Lançamento</th>
+                    <th>Diretores</th>
+                    <th>Atores</th>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
+
+        </div>
+    
+    </div>
+
+    <script type="text/javascript" src="/eel.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script>
+        var tabelaBase = "<tr>  <th>Nome</th>  th>Duração e<br>Lançamento</th>  <th>Diretores</th>  <th>Atores</th>  </tr>";
+        var linhaExtra = "<tr>  <td>{{nome}}</td>  <td>{{ano_dur}}</td>  <td>{{diretores}}</td>  <td>{{atores}}</td>  </tr>"
+
+        var filmeBase = {
+            id: "",
+            nome: "",
+            ano: 1900,
+            dur: 150,
+            diretores: [''],
+            atores: ['']
+        }
+
+
+        function getDados(){
+            //chamar python
+            pesquisa();
+        }
+
+        function repl(str, chave, dado){
+            var reg = new RegExp("{{" + chave + "}}");
+            return str.replace(reg, dado);
+        }
+
+        function textoDuracao(tempo){
+            tempo = Number(tempo);
+            tempo = Math.round(tempo);
+            var dur = Math.floor(tempo / 60);
+            dur += "h ";
+            var min = tempo % 60;
+            if(min) {
+                dur += min + "min";
+            }
+            return dur;
+        }
+
+
+        function processaDados(dados){
+            var strFinal = "";
+            strFinal += tabelaBase;
+            for(var filme of dados){
+                str = linhaExtra;
+
+                str = repl(str, "nome", filme.nome);
+
+                var anoDuracao = textoDuracao(filme.dur) + "<br>-<br>" + filme.ano;
+
+
+                str = repl(str, "ano_dur", anoDuracao);
+
+                var diretores = "";
+
+                for(var dir in filme.diretores){
+                    if(dir < filme.diretores.length - 1){
+                        diretores += filme.diretores[dir] + "<br>";
+                    } else {
+                        diretores += filme.diretores[dir];
+                    }
+                }
+
+                str = repl(str, "diretores", diretores);
+
+                var atores = "";
+
+                for(var at in filme.atores){
+                    if(at < filme.atores.length - 1){
+                        atores += filme.atores[at] + "<br>";
+                    } else {
+                        atores += filme.atores[at];
+                    }
+                }
+
+                str = repl(str, "atores", atores);
+
+                strFinal += str;
+            }
+
+            return strFinal;
+        }
+
+
+        $(document).ready(()=>{
+            /*var dados = getDados();
+            var tabelaHtml = processaDados(dados);
+            $("#tabelaDados").html(tabelaHtml);*/
+            $("#pesquisa").click(pesquisa);
+            pesquisa();
+        });
+
+
+        eel.expose(populaTabelaJs);
+        function populaTabelaJs(jsonDados){
+            document.log(jsonDados);
+            if(jsonDados.toUpperCase() == "FALSE"){
+                var tabelaHtml = processaDados([]);
+                $("#tabelaDados").html(tabelaHtml);
+                return;
+            }
+            dados = JSON.parse(jsonDados)
+            var tabelaHtml = processaDados(dados);
+            $("#tabelaDados").html(tabelaHtml);
+        }
+
+
+
+       
+        function pesquisa(){
+            var filtro = $('input[name=filtro]:checked').val();
+            if(filtro == 'filme'){
+                pesquisaFilme();
+            } else if(filtro == 'ator'){
+                pesquisaAtor();
+
+            } else if(filtro == 'diretor'){
+                pesquisaDiretor();
+
+            }
+        }
+
+        eel.expose(printa);
+        function printa(dado){
+            console.log(dado);
+            return '1';
+        }
+
+        function pesquisaFilme(){
+            var campo = $("#pesquisa").val();
+
+            eel.pesquisaFilmePy(campo);
+            // acende "pesquisando"
+        }
+
+    </script>
+</body>
+</html>
