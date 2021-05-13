@@ -153,6 +153,11 @@ except FileNotFoundError:
     directors_abp = createAbp(directors_list)
     films_abp = createAbp_FILME(films_list)
 
+    salvaTudo()
+
+
+
+def salvaTudo():
 
     # Salvando as listas
     outfile = open(file_ator, 'wb')
@@ -340,6 +345,28 @@ def pesquisaAtorPy (nome) :
 
 
 
+@eel.expose
+def removerPy(id):
+    filme_rem = films_abp.Find_Node(int(id))['data']
+
+    film_trie.delete(filme_rem['nome'])
+
+    del matriz_filme_diretor[filme_rem['id']]
+    del matriz_filme_ator[filme_rem['id']]
+
+    
+    # Salvando as matrizes
+    outfile = open(file_matriz_filme_ator, 'wb')
+    pickle.dump(matriz_filme_ator, outfile)
+    outfile.close()
+
+    outfile = open(file_matriz_filme_diretor, 'wb')
+    pickle.dump(matriz_filme_diretor, outfile)
+    outfile.close()
+
+    outfile = open(file_trie_filme, 'wb')
+    pickle.dump(film_trie, outfile)
+    outfile.close()
 
 
 
@@ -408,11 +435,84 @@ def pesquisaDiretorPy (nome) :
 
 
 
+@eel.expose
+def inserirFilmePy(nome, dur, ano, atores, diretores):
+    atores = atores.split(';')
+    diretores = diretores.split(';')
+
+    atores_ids =  []
+    diretores_ids = []
+
+    for ator in atores:
+        retorno = actor_trie.query(ator)
+        print(retorno)
+        if len(retorno) != 1:
+            novo_id = novoId(actors_abp)
+            nodo = {"id": novo_id, "data": ator}
+            print(nodo)
+            actors_abp.Add_Node(nodo)
+            actor_trie.insert(ator, novo_id)
+            atores_ids.append(novo_id)
+        else:
+            atores_ids.append(retorno[2])
+
+
+
+    for diretor in diretores:
+        retorno = director_trie.query(diretor)
+        print(retorno)
+        if len(retorno) != 1:
+            novo_id = novoId(directors_abp)
+            nodo = {"id": novo_id, "data": diretor}
+            print(nodo)
+            directors_abp.Add_Node(nodo)
+            director_trie.insert(ator, novo_id)
+            diretores_ids.append(novo_id)
+        else:
+            diretores_ids.append(retorno[2])
+
+
+
+    retorno = film_trie.query(nome)
+    print(retorno)
+    if len(retorno) != 1:
+        #NOVO FILME
+        novo_id = novoId(films_abp)
+        
+        data_filme = {}
+        data_filme['nome'] = nome
+        data_filme['ano'] = ano
+        data_filme['dur'] = dur
+        data_filme['id'] = novo_id
+
+        nodo = {"id": novo_id, "data": data_filme}
+        print(nodo)
+
+        films_abp.Add_Node(nodo)
+
+        film_trie.insert(nome, novo_id)
+
+        matriz_filme_ator[novo_id] = atores_ids
+
+        matriz_filme_diretor[novo_id] = diretores_ids
+
+    salvaTudo()
 
 
 
 
 
+
+
+
+
+
+
+
+
+def novoId(abp):
+    maior = abp.Find_Maximum_Node()
+    return maior['id'] + 1
 
 
 

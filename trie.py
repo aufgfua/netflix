@@ -37,6 +37,7 @@ class Trie(object):
     def insert(self, word, id):
         """Insert a word into the trie"""
         node = self.root
+        word = word.upper()
 
         # Loop through each character in the word
         # Check if there is no child containing the character, create a new child for the current node
@@ -83,6 +84,8 @@ class Trie(object):
         self.output = []
         node = self.root
 
+        x = x.upper()
+
         # Check if the prefix is in the trie
         for char in x:
             if char in node.children:
@@ -116,4 +119,6 @@ class Trie(object):
             return 'Palavra deletada com sucesso!'
         else:
             return 'Digite exatamente o nome do que deseja deletar, por favor!'
+
+
 

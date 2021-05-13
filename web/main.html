@@ -6,6 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catálogo Netflix</title> 
     <style>
+        .apagar {
+            background-color: #e04222; 
+            border: 1px solid #222; 
+            padding: 10px; 
+            border-radius: 3px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .apagar:hover {
+
+            background-color: #f05030
+        }
         th {
             background-color: #e7f1f6;
         }
@@ -26,11 +38,30 @@
         </style>
 </head>
 <body>
-    <div style="width: 100%">
+    <div id="inserir" style="display: none;">
+        <button id="voltar-main" style="border-radius: 3px; padding: 15px; right: 25px; top: 25px; position: fixed; cursor: pointer;">Voltar</button>
+        <div style="width: 40%; padding: 10% 30%; text-align: center; font-size: 18px; font-weight: bold;">
+            <form id="novo-filme">
+                Para inserir um novo filme, preencha seus dados abaixo e clique em "INSERIR!"<br><br>
+                Se desejar atualizar um filme existente, é só preencher o campo "Nome" com o nome do filme que deseja atualizar.<br><br>
+                IMPORTANTE: Separe o nome de autores / diretores com ";". Não com espaço, não com vírgula. Com ";" (ponto e vírgula).
+                <br><br><br>
+                Nome: <input type="text" id="nome-ins" maxlength="50" style="font-size: 18px; width: 300px;"><br><br>
+                Duração (minutos): <input type="number" id="dur-ins" maxlength="3" style="font-size: 18px; width: 300px;"><br><br>
+                Ano de Lançamento: <input type="number" id="ano-ins" maxlength="4" style="font-size: 18px; width: 300px;"><br><br>
+                Atores (separados por ;): <input type="text" id="atores-ins" style="font-size: 18px; width: 300px;"><br><br>
+                Diretores (separador por ;): <input type="text" id="diretores-ins" style="font-size: 18px; width: 300px;"><br><br><br>
+                <button style="border-radius: 3px; padding: 15px; cursor: pointer;" id="inserir-dados">INSERIR!</button>
+
+            </form>
+        </div>
+
+    </div>
+    <div style="width: 100%" id="main">
 
         <div style="width: 100%;">
             <img src="./logo.png" width="125" style="display: inline-block; position: fixed;"/>
-    
+            <button id="inserir-novo" style="border-radius: 3px; padding: 15px; right: 25px; top: 25px; position: fixed; cursor: pointer;">Inserir Novo</button>
         </div>
         <div style="display: block; font-size: 30px; font-weight: bold; padding: 25px; text-align: center;">
             CATÁLOGO NETFLIX
@@ -83,15 +114,17 @@
                         <th style="width: 3.5%">ID</th>
                         <th style="width: 34%">Nome</th>
                         <th style="width: 17.5%">Duração e<br>Lançamento</th>
-                        <th style="width: 22.5%">Diretores</th>
-                        <th style="width: 22.5%">Atores</th>
+                        <th style="width: 21%">Diretores</th>
+                        <th style="width: 21%">Atores</th>
+                        <th style="width: 3%">X</th>
                     </tr>
                     <tr>
-                        <th style="width: 3.5%">ID</th>
+                        <td style="width: 3.5%"></td>
                         <td style="width: 34%"></td>
                         <td style="width: 17.5%"></td>
-                        <td style="width: 22.5%"></td>
-                        <td style="width: 22.5%"></td>
+                        <td style="width: 21%"></td>
+                        <td style="width: 21%"></td>
+                        <td style="width: 3%"></td>
                     </tr>
                 </table>
                 
@@ -103,8 +136,8 @@
     <script type="text/javascript" src="/eel.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script>
-        var tabelaBase = "<tr>  <th style='width: 3.5%'>ID</th> <th style='width: 34%'>Nome</th> <th style='width: 17.5%'>Duração e<br>Lançamento</th>  <th style='width: 22.5%'>Diretores</th>  <th style='width: 22.5%'>Atores</th>  </tr>";
-        var linhaExtra = "<tr>  <td style='width: 3.5%'>{{id}}</td>  <td style='width: 34%'>{{nome}}</td>  <td style='width: 17.5%'>{{ano_dur}}</td>  <td style='width: 22.5%'>{{diretores}}</td>  <td style='width: 22.5%'>{{atores}}</td>  </tr>"
+        var tabelaBase = "<tr>  <th style='width: 3.5%'>ID</th> <th style='width: 34%'>Nome</th> <th style='width: 17.5%'>Duração e<br>Lançamento</th>  <th style='width: 21%'>Diretores</th>  <th style='width: 21%'>Atores</th> <th style='width: 3%'>X</th> </tr>";
+        var linhaExtra = "<tr>  <td style='width: 3.5%'>{{id}}</td>  <td style='width: 34%'>{{nome}}</td>  <td style='width: 17.5%'>{{ano_dur}}</td>  <td style='width: 21%'>{{diretores}}</td>  <td style='width: 21%'>{{atores}}</td> <td style='width: 3%'><button class='apagar' id-alvo='{{id-base}}'>X</button></td> </tr>"
 
         var ultima_pesquisa = [];
 
@@ -126,7 +159,7 @@
         }
 
         function repl(str, chave, dado){
-            var reg = new RegExp("{{" + chave + "}}");
+            var reg = new RegExp("{{" + chave + "}}", "ig");
             return str.replace(reg, dado);
         }
 
@@ -150,6 +183,7 @@
                 str = linhaExtra;
 
                 str = repl(str, "id", "s"+filme.id);
+                str = repl(str, "id-base", filme.id);
                 str = repl(str, "nome", filme.nome);
 
                 var anoDuracao = textoDuracao(filme.dur) + "<br>-<br>" + filme.ano;
@@ -187,6 +221,77 @@
             return strFinal;
         }
 
+        function apagar(){
+
+            
+            var id = $(this).attr('id-alvo');
+            var escolha = confirm("Tem certeza de que deseja apagar o filme de ID s"+ id +"?");
+            var trPai = $(this).parent().parent();
+
+            if(escolha){
+                trPai.remove();
+                eel.removerPy(id);
+
+                for(filme in ultima_pesquisa){
+                    if(ultima_pesquisa[filme].id == id){
+                        ultima_pesquisa.splice(filme, 1);
+                    }
+                }
+
+                setTimeout(()=>{alert("Filme apagado com sucesso")}, 20);
+            } else {
+                alert("Sábia escolha. Quase nenhum filme merece ser apagado.");
+            }
+        }
+
+
+        function inserir(){
+
+            var nome = $("#nome-ins").val();
+            var dur = $("#dur-ins").val();
+            var ano = $("#ano-ins").val();
+            var atores = $("#atores-ins").val();
+            var diretores = $("#diretores-ins").val();
+
+            if(nome != ""){
+                alert('1')
+                console.log(atores, diretores)
+                eel.inserirFilmePy(nome, dur, ano, atores, diretores);
+                alert("Mudança realizada com sucesso!")
+                voltarMain();
+            } else {
+                alert('2')
+                alert("O campo 'Nome' é obrigatório!")
+            }
+
+
+        }
+
+        function populaDados(dados){
+            console.log(dados);
+            var tabelaHtml = processaDados(dados);
+            $("#tabelaDados").html(tabelaHtml);
+            $(".apagar").click(apagar);
+
+
+        }
+
+        function inserirNovo(){
+            $("#main").hide();
+            $("#inserir-novo").hide();
+
+            $("#inserir").show();
+            $("#voltar-main").show();
+        }
+
+        function voltarMain(){
+            $("#inserir").hide();
+            $("#voltar-main").hide();
+
+            $("#main").show();
+            $("#inserir-novo").show();
+        }
+
 
         $(document).ready(()=>{
             /*var dados = getDados();
@@ -196,14 +301,19 @@
             //$("#pesquisa").on('keydown', pesquisa);
             pesquisa();
 
+            $("#inserir-novo").click(inserirNovo);
+            $("#voltar-main").click(voltarMain)
+            $("#inserir-dados").click(inserir);
+
+            $(".apagar").click(apagar);
+
             $("input[name=ordem]").on('click change', ()=>{
                 var valor = $("input[name=ordem]:checked").val();
                 if(valor == 'crescente'){
                     if(ordenacaoInversa){
                         ordenacaoInversa = false;
                         ultima_pesquisa = inverte(ultima_pesquisa);
-                        var tabelaHtml = processaDados(ultima_pesquisa);
-                        $("#tabelaDados").html(tabelaHtml);
+                        populaDados(ultima_pesquisa);
                     } else {
                         ordenacaoInversa = false;
                     }
@@ -213,8 +323,7 @@
                     } else {
                         ordenacaoInversa = true;
                         ultima_pesquisa = inverte(ultima_pesquisa);
-                        var tabelaHtml = processaDados(ultima_pesquisa);
-                        $("#tabelaDados").html(tabelaHtml);
+                        populaDados(ultima_pesquisa);
                     }
                 }
                 
@@ -247,8 +356,7 @@
 
             ultima_pesquisa = dados;
 
-            var tabelaHtml = processaDados(dados);
-            $("#tabelaDados").html(tabelaHtml);
+            populaDados(ultima_pesquisa);
         }
 
 
