@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catálogo Netflix</title> 
-    <style> 
+    <style>
         th {
             background-color: #e7f1f6;
         }
@@ -17,7 +17,7 @@
         table {
             border-collapse: collapse;
             width: 96%;
-            margin: 50px 2% 0 2%;
+            margin: 15px 2% 0 2%;
             font-size: 17px;
         }
         tr:nth-child(odd) {
@@ -27,11 +27,14 @@
 </head>
 <body>
     <div style="width: 100%">
+
+        <div style="width: 100%;">
+            <img src="./logo.png" width="125" style="display: inline-block; position: fixed;"/>
     
-        <div style="font-size: 30px; font-weight: bold; padding: 25px; text-align: center;">
+        </div>
+        <div style="display: block; font-size: 30px; font-weight: bold; padding: 25px; text-align: center;">
             CATÁLOGO NETFLIX
         </div>
-
         <div style="width: 80%; padding: 20px 10% 0 10%">
             <form>
                 <div style="width: 100%; display: block; text-align: center; font-size: 21px; padding: 0px 0px 20px 0px; font-weight: bold;">Filtros de Pesquisa:<br></div>
@@ -52,37 +55,60 @@
                 </div>
 
                 <input type="text" id="pesquisa" style="width: 50%; margin: 25px 2% 0 13%; font-size: 17px; padding: 7px 10px 7px 10px;" placeholder="Pesquisa..."/>
-                <input type="button" style="width: 20%; margin: 25px 0 0 2%; font-size: 17px; padding: 7px 10px 7px 10px;" value="Pesquisar!">
+                <input type="button" id="pesquisar" style="width: 20%; margin: 25px 0 0 2%; font-size: 17px; padding: 7px 10px 7px 10px;" value="Pesquisar!">
 
-            </form>
-
-
-        </div>
-        <div style="padding: 0 2%;">
-            <table id="tabelaDados">
-                <tr>
-                    <th>Nome</th>
-                    <th>Duração e<br>Lançamento</th>
-                    <th>Diretores</th>
-                    <th>Atores</th>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            </table>
-
-        </div>
+                <div style="width: 60%; text-align: center; margin-top: 45px; margin-left: 20%; margin-right: 20%;">
+                    <span style="font-size: 20px; font-weight: bold;">Ordem:</span><br>
+                    <div style="display: flex">
+                        <div style="width: 50%; text-align: center; font-size: 18px; margin-top: 15px;">
+                            Crescente
+                            <br>
+                            <input type="radio" name="ordem" value="crescente" checked="checked">
+                        </div>
+                        <div style="width: 50%; text-align: center; font-size: 18px; margin-top: 15px;">
+                            Decrescente
+                            <br>
+                            <input type="radio" name="ordem" value="decrescente">
+                        </div>
+                    </div>
+                </div>
+                
+                
+            </div>
+            <div style="padding: 0 2%;">
+                <div id="pesquisando" style="display: none; font-weight: bold; font-size: 30px; text-align: center; margin-top: 30px;">Pesquisando...</div>
+                <div id="vazio" style="display: none; font-weight: bold; font-size: 30px; text-align: center; margin-top: 30px;">Nenhum Dado Encontrado!</div>
+                <table id="tabelaDados">
+                    <tr>
+                        <th style="width: 3.5%">ID</th>
+                        <th style="width: 34%">Nome</th>
+                        <th style="width: 17.5%">Duração e<br>Lançamento</th>
+                        <th style="width: 22.5%">Diretores</th>
+                        <th style="width: 22.5%">Atores</th>
+                    </tr>
+                    <tr>
+                        <th style="width: 3.5%">ID</th>
+                        <td style="width: 34%"></td>
+                        <td style="width: 17.5%"></td>
+                        <td style="width: 22.5%"></td>
+                        <td style="width: 22.5%"></td>
+                    </tr>
+                </table>
+                
+            </div>
+        </form>
     
     </div>
 
     <script type="text/javascript" src="/eel.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script>
-        var tabelaBase = "<tr>  <th>Nome</th>  th>Duração e<br>Lançamento</th>  <th>Diretores</th>  <th>Atores</th>  </tr>";
-        var linhaExtra = "<tr>  <td>{{nome}}</td>  <td>{{ano_dur}}</td>  <td>{{diretores}}</td>  <td>{{atores}}</td>  </tr>"
+        var tabelaBase = "<tr>  <th style='width: 3.5%'>ID</th> <th style='width: 34%'>Nome</th> <th style='width: 17.5%'>Duração e<br>Lançamento</th>  <th style='width: 22.5%'>Diretores</th>  <th style='width: 22.5%'>Atores</th>  </tr>";
+        var linhaExtra = "<tr>  <td style='width: 3.5%'>{{id}}</td>  <td style='width: 34%'>{{nome}}</td>  <td style='width: 17.5%'>{{ano_dur}}</td>  <td style='width: 22.5%'>{{diretores}}</td>  <td style='width: 22.5%'>{{atores}}</td>  </tr>"
+
+        var ultima_pesquisa = [];
+
+        var ordenacaoInversa = false;
 
         var filmeBase = {
             id: "",
@@ -123,6 +149,7 @@
             for(var filme of dados){
                 str = linhaExtra;
 
+                str = repl(str, "id", "s"+filme.id);
                 str = repl(str, "nome", filme.nome);
 
                 var anoDuracao = textoDuracao(filme.dur) + "<br>-<br>" + filme.ano;
@@ -165,28 +192,77 @@
             /*var dados = getDados();
             var tabelaHtml = processaDados(dados);
             $("#tabelaDados").html(tabelaHtml);*/
-            $("#pesquisa").click(pesquisa);
+            $("#pesquisar").click(pesquisa);
+            //$("#pesquisa").on('keydown', pesquisa);
             pesquisa();
+
+            $("input[name=ordem]").on('click change', ()=>{
+                var valor = $("input[name=ordem]:checked").val();
+                if(valor == 'crescente'){
+                    if(ordenacaoInversa){
+                        ordenacaoInversa = false;
+                        ultima_pesquisa = inverte(ultima_pesquisa);
+                        var tabelaHtml = processaDados(ultima_pesquisa);
+                        $("#tabelaDados").html(tabelaHtml);
+                    } else {
+                        ordenacaoInversa = false;
+                    }
+                } else {
+                    if(ordenacaoInversa){
+                        ordenacaoInversa = true;
+                    } else {
+                        ordenacaoInversa = true;
+                        ultima_pesquisa = inverte(ultima_pesquisa);
+                        var tabelaHtml = processaDados(ultima_pesquisa);
+                        $("#tabelaDados").html(tabelaHtml);
+                    }
+                }
+                
+            });
         });
 
 
         eel.expose(populaTabelaJs);
         function populaTabelaJs(jsonDados){
-            document.log(jsonDados);
-            if(jsonDados.toUpperCase() == "FALSE"){
-                var tabelaHtml = processaDados([]);
-                $("#tabelaDados").html(tabelaHtml);
+            $("#vazio").hide()
+            $("#pesquisando").hide()
+            $("#tabelaDados").show()
+
+            if(typeof jsonDados == "string" && jsonDados.toUpperCase() == "FALSE"){
+                console.log('vazio')
+                $("#vazio").show()
+                $("#pesquisando").hide();
+                $("#tabelaDados").html(tabelaBase + linhaExtra.replace(/{{[^{}]*}}/ig, ""));
+                $("#tabelaDados").show();
                 return;
             }
-            dados = JSON.parse(jsonDados)
+
+            dados = JSON.parse(jsonDados);
+
+            dados = merge_sort(dados);
+
+            if(ordenacaoInversa == true){
+                dados = inverte(dados);
+            }
+
+            ultima_pesquisa = dados;
+
             var tabelaHtml = processaDados(dados);
             $("#tabelaDados").html(tabelaHtml);
         }
 
 
+        function inverte(dados){
+            dados.reverse();
+            return dados;
+        }
+
 
        
         function pesquisa(){
+            $("#tabelaDados").hide()
+            $("#vazio").hide()
+            $("#pesquisando").show()
             var filtro = $('input[name=filtro]:checked').val();
             if(filtro == 'filme'){
                 pesquisaFilme();
@@ -197,6 +273,7 @@
                 pesquisaDiretor();
 
             }
+            
         }
 
         eel.expose(printa);
@@ -211,6 +288,79 @@
             eel.pesquisaFilmePy(campo);
             // acende "pesquisando"
         }
+
+        
+        function pesquisaAtor(){
+            var campo = $("#pesquisa").val();
+
+            eel.pesquisaAtorPy(campo);
+            // acende "pesquisando"
+        }
+
+        function pesquisaDiretor(){
+            var campo = $("#pesquisa").val();
+
+            eel.pesquisaDiretorPy(campo);
+            // acende "pesquisando"
+        }
+
+
+
+
+        function merge_sort(arr){
+
+            if(typeof arr != "object")
+                return arr;
+
+                
+            var len = arr.length;
+            
+            if(len <= 1)
+                return arr;
+
+            var meio = Math.floor(arr.length/2);
+
+            var esq = merge_sort(arr.slice(0, meio))
+            var dir = merge_sort(arr.slice(meio, len))
+
+            return merge_film(esq, dir);
+        }
+
+        function merge_film(arr1, arr2){
+
+            var res = [];
+
+            while (arr1.length > 0 && arr2.length > 0){
+                var item1 = String(arr1[0]['nome']).toLowerCase();
+                var item2 = String(arr2[0]['nome']).toLowerCase();
+                var compare = item1.localeCompare(item2);
+                if(compare <= -1){
+                    res.push(arr1.shift());
+                } else {
+                    if(compare >= 1){
+                        res.push(arr2.shift());
+                    } else {
+                        if(arr1[0]['nome'] < arr2[0]['nome']){
+                            res.push(arr1.shift());
+                        } else {
+                            res.push(arr2.shift());
+                        }
+                    }
+                }
+            }
+            
+            while (arr1.length > 0){
+                res.push(arr1.shift());                
+            }
+            
+            while (arr2.length > 0){
+                res.push(arr2.shift());                
+            }
+            return res;
+
+        }
+
+
 
     </script>
 </body>

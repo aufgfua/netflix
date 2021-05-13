@@ -221,8 +221,7 @@ def pesquisaFilmePy (nome) :
     filmes_pesquisados = []
 
     if len(dados) <= 0:
-        #eel.populaTabelaJs("FALSE")
-        print('dados 0')
+        eel.populaTabelaJs("FALSE")
     else:
         for filme_tupla in dados:
             filmes = films_abp.Find_Node(filme_tupla[2])
@@ -239,23 +238,186 @@ def pesquisaFilmePy (nome) :
             diretores_filme = []
             lista_ids_diretores = matriz_filme_diretor[obj['id']]
 
-            diretores_filme = lista_ids_diretores
+            
+            for diretor in lista_ids_diretores:
+                diretor_nome = directors_abp.Find_Node(diretor)['data']
+                diretores_filme.append(diretor_nome)
 
 
             atores_filme = []
             lista_ids_ator = matriz_filme_ator[obj['id']]
-            atores_filme = lista_ids_ator
+
+            for ator in lista_ids_ator:
+                ator_nome = actors_abp.Find_Node(ator)['data']
+                atores_filme.append(ator_nome)
+
 
             obj['atores'] = atores_filme
             obj['diretores'] = diretores_filme
 
             filmes_pesquisados.append(obj)
         
-        #JSON_filme = json.dumps(filmes_pesquisados)
+        JSON_filme = json.dumps(filmes_pesquisados)
 
-        eel.printa('1234')
+        #eel.printa(JSON_filme)
 
-        #eel.populaTabelaJs(JSON_filme)
+        eel.populaTabelaJs(JSON_filme)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@eel.expose
+def pesquisaAtorPy (nome) :
+    dados = actor_trie.query(nome)
+
+    atores_pesquisados = []
+
+    if len(dados) <= 0:
+        eel.populaTabelaJs("FALSE")
+    else:
+        filmes_dos_atores = {}
+        for ator_tupla in dados:
+            id_ator = ator_tupla[2]
+
+
+            for filme in matriz_filme_ator:
+                if id_ator in matriz_filme_ator[filme]:
+                    filmes_dos_atores[filme] = filme
+
+        filmes_pesquisados = []
+        for filme_idx in filmes_dos_atores:
+            filmes = films_abp.Find_Node(filme_idx)
+
+            if isinstance(filmes, str) and upper(filmes) == "FALSE":
+                continue
+            filmes = filmes['data']
+            obj = {}
+            obj['nome'] = filmes['nome']
+            obj['ano'] = filmes['ano']
+            obj['dur'] = filmes['dur']
+            obj['id'] = filmes['id']
+            
+            diretores_filme = []
+            lista_ids_diretores = matriz_filme_diretor[obj['id']]
+
+            
+            for diretor in lista_ids_diretores:
+                diretor_nome = directors_abp.Find_Node(diretor)['data']
+                diretores_filme.append(diretor_nome)
+
+
+            atores_filme = []
+            lista_ids_ator = matriz_filme_ator[obj['id']]
+
+            for ator in lista_ids_ator:
+                ator_nome = actors_abp.Find_Node(ator)['data']
+                atores_filme.append(ator_nome)
+
+
+            obj['atores'] = atores_filme
+            obj['diretores'] = diretores_filme
+
+            filmes_pesquisados.append(obj)
+        
+        JSON_filme = json.dumps(filmes_pesquisados)
+
+        #eel.printa(JSON_filme)
+
+        eel.populaTabelaJs(JSON_filme)
+
+
+
+
+
+
+
+
+
+
+
+@eel.expose
+def pesquisaDiretorPy (nome) :
+    dados = director_trie.query(nome)
+
+    diretores_pesquisados = []
+
+    if len(dados) <= 0:
+        eel.populaTabelaJs("FALSE")
+    else:
+        filmes_dos_diretores = {}
+        for diretor_tupla in dados:
+            id_diretor = diretor_tupla[2]
+
+
+            for filme in matriz_filme_diretor:
+                if id_diretor in matriz_filme_diretor[filme]:
+                    filmes_dos_diretores[filme] = filme
+
+        filmes_pesquisados = []
+        for filme_idx in filmes_dos_diretores:
+            filmes = films_abp.Find_Node(filme_idx)
+
+            if isinstance(filmes, str) and upper(filmes) == "FALSE":
+                continue
+            filmes = filmes['data']
+            obj = {}
+            obj['nome'] = filmes['nome']
+            obj['ano'] = filmes['ano']
+            obj['dur'] = filmes['dur']
+            obj['id'] = filmes['id']
+            
+            diretores_filme = []
+            lista_ids_diretores = matriz_filme_diretor[obj['id']]
+
+            
+            for diretor in lista_ids_diretores:
+                diretor_nome = directors_abp.Find_Node(diretor)['data']
+                diretores_filme.append(diretor_nome)
+
+
+            atores_filme = []
+            lista_ids_ator = matriz_filme_ator[obj['id']]
+
+            for ator in lista_ids_ator:
+                ator_nome = actors_abp.Find_Node(ator)['data']
+                atores_filme.append(ator_nome)
+
+
+            obj['atores'] = atores_filme
+            obj['diretores'] = diretores_filme
+
+            filmes_pesquisados.append(obj)
+        
+        JSON_filme = json.dumps(filmes_pesquisados)
+
+        #eel.printa(JSON_filme)
+
+        eel.populaTabelaJs(JSON_filme)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         
